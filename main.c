@@ -56,20 +56,44 @@
 #include "timebase.h"
 #include "esb.h"
 #include "debug_swo.h"
+#include "led.h"
 
-
-static uint32_t test_flag = 0;
+static volatile uint32_t update_flag = 1;
 
 static uint8_t esb_listener_address[5] = {100,100,100,100,1};
+
+uint8_t test_colors[3] = {0};
 
 static void esb_listener_callback(uint8_t *payload, uint8_t payload_length)
 {
     debug_swo_printf("received data: length: %d, cmd=%02X\n", payload_length, payload[0]);
+    switch(payload[0]){
+    case 0x10:
+        if (payload_length == 4){
+            test_colors[0] = payload[1];
+            test_colors[1] = payload[2];
+            test_colors[2] = payload[3];
+            update_flag = 1;
+        }
+        break;
+    default:
+        break;
+    }
 }
 
 static void button_handler(nrfx_gpiote_pin_t pin, nrf_gpiote_polarity_t action){
+    static uint8_t color_index = 0;
+
     debug_swo_printf("BUTTON PRESSED\n");
-    test_flag = 1;
+
+    memset(test_colors, 0x00, 3);
+    test_colors[color_index] = 0xFF;
+    color_index++;
+    if(color_index==3){
+        color_index = 0;
+    }
+    
+    update_flag = 1;
 }
 
 
@@ -125,15 +149,17 @@ int main(void)
 
     rf_antenna_init();
 
+    led_init();
 
     err_code = esb_init();
     esb_set_pipeline_address(ESB_PIPE_1, esb_listener_address);
     esb_start_listening(ESB_PIPE_1, esb_listener_callback);
 	while (true)
 	{
-        if(1 == test_flag){
-            test_flag = 0;
-
+        if(1 == update_flag){
+            update_flag = 0;
+            led_set_all(test_colors[0],test_colors[1],test_colors[2]);
+            led_update();
         }
 
     }
