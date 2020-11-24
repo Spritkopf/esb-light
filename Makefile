@@ -14,8 +14,10 @@ SRC_FILES += \
   $(PROJ_DIR)/main.c \
   $(PROJ_DIR)/timebase.c \
   $(PROJ_DIR)/esb.c \
+  $(PROJ_DIR)/esb_protocol.c \
   $(PROJ_DIR)/debug_swo.c \
   $(PROJ_DIR)/led.c \
+  $(PROJ_DIR)/led_effects.c \
   $(SDK_ROOT)/modules/nrfx/mdk/gcc_startup_nrf52840.S \
   $(SDK_ROOT)/components/boards/boards.c \
   $(SDK_ROOT)/components/libraries/timer/app_timer.c \

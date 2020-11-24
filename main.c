@@ -54,32 +54,12 @@
 #include "nrf_drv_clock.h"
 
 #include "timebase.h"
-#include "esb.h"
+#include "esb_protocol.h"
 #include "debug_swo.h"
 #include "led.h"
 
 static volatile uint32_t update_flag = 1;
-
-static uint8_t esb_listener_address[5] = {100,100,100,100,1};
-
 uint8_t test_colors[3] = {0};
-
-static void esb_listener_callback(uint8_t *payload, uint8_t payload_length)
-{
-    debug_swo_printf("received data: length: %d, cmd=%02X\n", payload_length, payload[0]);
-    switch(payload[0]){
-    case 0x10:
-        if (payload_length == 4){
-            test_colors[0] = payload[1];
-            test_colors[1] = payload[2];
-            test_colors[2] = payload[3];
-            update_flag = 1;
-        }
-        break;
-    default:
-        break;
-    }
-}
 
 static void button_handler(nrfx_gpiote_pin_t pin, nrf_gpiote_polarity_t action){
     static uint8_t color_index = 0;
@@ -95,7 +75,6 @@ static void button_handler(nrfx_gpiote_pin_t pin, nrf_gpiote_polarity_t action){
     
     update_flag = 1;
 }
-
 
 void clocks_start( void )
 {
@@ -151,9 +130,8 @@ int main(void)
 
     led_init();
 
-    err_code = esb_init();
-    esb_set_pipeline_address(ESB_PIPE_1, esb_listener_address);
-    esb_start_listening(ESB_PIPE_1, esb_listener_callback);
+    
+    esb_protocol_init();
 	while (true)
 	{
         if(1 == update_flag){
@@ -161,6 +139,7 @@ int main(void)
             led_set_all(test_colors[0],test_colors[1],test_colors[2]);
             led_update();
         }
+        esb_protocol_process();
 
     }
 }
