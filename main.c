@@ -57,6 +57,7 @@
 #include "esb_protocol.h"
 #include "debug_swo.h"
 #include "led.h"
+#include "led_effects.h"
 
 static volatile uint32_t update_flag = 1;
 uint8_t test_colors[3] = {0};
@@ -129,7 +130,7 @@ int main(void)
     rf_antenna_init();
 
     led_init();
-
+    led_effects_init();
     
     esb_protocol_init();
 	while (true)
@@ -141,5 +142,6 @@ int main(void)
         }
         esb_protocol_process();
 
+        
     }
 }

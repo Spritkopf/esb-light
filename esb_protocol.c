@@ -49,6 +49,9 @@ int8_t esb_protocol_process(void)
                 led_effects_static_rgb(rx_payload[1], rx_payload[2], rx_payload[3]);
             }
             break;
+        case ESB_CMD_SET_RGB_FADE:
+            led_effects_fade_rgb(0, 0, 0);
+            break;
         case ESB_CMD_DISABLE:
             led_effects_disable();
             break;
