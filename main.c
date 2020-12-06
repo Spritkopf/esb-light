@@ -58,21 +58,21 @@
 #include "debug_swo.h"
 #include "led.h"
 #include "led_effects.h"
-
+#include "colorwheel.h"
 static volatile uint32_t update_flag = 1;
 uint8_t test_colors[3] = {0};
 
 static void button_handler(nrfx_gpiote_pin_t pin, nrf_gpiote_polarity_t action){
-    static uint8_t color_index = 0;
+    static uint16_t hue = 0;
 
     debug_swo_printf("BUTTON PRESSED\n");
-
     memset(test_colors, 0x00, 3);
-    test_colors[color_index] = 0xFF;
-    color_index++;
-    if(color_index==3){
-        color_index = 0;
+
+    hue+=30;
+    if(hue>=360){
+        hue = 0;
     }
+    colorwheel_get_rgb(hue, &test_colors[0],&test_colors[1],&test_colors[2]);
     
     update_flag = 1;
 }
@@ -130,7 +130,7 @@ int main(void)
     rf_antenna_init();
 
     led_init();
-    led_effects_init();
+    //led_effects_init();
     
     esb_protocol_init();
 	while (true)
