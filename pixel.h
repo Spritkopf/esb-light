@@ -11,11 +11,6 @@ typedef struct{
     uint8_t b;
 } color_t;
 
-typedef struct{
-    uint16_t hue;
-    uint8_t intensity;
-    uint8_t *p_buf;
-} pixel_t;
 
 /*!
  * \brief Initialize pixel module 
@@ -42,15 +37,7 @@ int8_t pixel_get_rgb(uint8_t id, uint8_t *r, uint8_t *g, uint8_t *b);
  */
 int8_t pixel_set_rgb(uint8_t id, uint8_t r, uint8_t g, uint8_t b);
 
-/*!
- * \brief Get HSI Value of specific pixel
- * \param id        Pixel number (maximum PIXEL_NUM)
- * \param hue       pointer to buffer for hue value (0 - 360)
- * \param intensity pointer to buffer for intensity value (0 - 255)
- * \returns 0 if OK, -1 on illegal pixel id
- * \note    Saturation is always 1.0
- */
-int8_t pixel_get_hsi(uint8_t id, uint16_t *hue, uint8_t *intensity);
+
 
 /*!
  * \brief Set HSI Value of specific pixel

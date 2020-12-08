@@ -12,6 +12,13 @@
 
 #define PIXEL_RGB_VAL_NUM  (PIXEL_NUM*3)
 
+typedef struct{
+    color_t current_rgb;
+} pixel_t;
+
+
+
+
 static nrfx_spi_t m_spi0 = NRFX_SPI_INSTANCE(0);
 static void spi_init(void);
 static void spi_xfer(uint8_t *data, uint8_t len);
@@ -26,11 +33,6 @@ void pixel_init(void)
     /* init SPI interface */
     spi_init();
 
-    /* set buffer pointers for pixels */
-    for(uint8_t i = 0; i < PIXEL_NUM; i++){
-        pixels[i].p_buf = &(g_pixel_rgb_buffer[i*3]);
-    }
-
     /* clear all pixels */
     pixel_update();
 }
@@ -39,9 +41,9 @@ int8_t pixel_get_rgb(uint8_t id, uint8_t *r, uint8_t *g, uint8_t *b)
 {
     M_CHECK_PIXEL_ID(id);
 
-    *r = pixels[id].p_buf[PIXEL_BUF_IDX_R];
-    *g = pixels[id].p_buf[PIXEL_BUF_IDX_G];
-    *b = pixels[id].p_buf[PIXEL_BUF_IDX_B];
+    *r = pixels[id].current_rgb.r;
+    *g = pixels[id].current_rgb.g;
+    *b = pixels[id].current_rgb.b;
 
     return (0);
 }
@@ -50,9 +52,9 @@ int8_t pixel_set_rgb(uint8_t id, uint8_t r, uint8_t g, uint8_t b)
 {
     M_CHECK_PIXEL_ID(id);
 
-    pixels[id].p_buf[PIXEL_BUF_IDX_R] = r;
-    pixels[id].p_buf[PIXEL_BUF_IDX_G] = g;
-    pixels[id].p_buf[PIXEL_BUF_IDX_B] = b;
+    pixels[id].current_rgb.r = r;
+    pixels[id].current_rgb.g = g;
+    pixels[id].current_rgb.b = b;
 
     return (0);
 }
@@ -61,40 +63,36 @@ int8_t pixel_set_hsi(uint8_t id, uint16_t hue, uint8_t intensity)
 {
     M_CHECK_PIXEL_ID(id);
 
-    colorwheel_get_rgb(hue, &(pixels[id].p_buf[PIXEL_BUF_IDX_R]), 
-                            &(pixels[id].p_buf[PIXEL_BUF_IDX_G]), 
-                            &(pixels[id].p_buf[PIXEL_BUF_IDX_B]));
+    colorwheel_get_rgb(hue, &(pixels[id].current_rgb.r), 
+                            &(pixels[id].current_rgb.g), 
+                            &(pixels[id].current_rgb.b));
 
-    colorwheel_set_brightness(intensity, &(pixels[id].p_buf[PIXEL_BUF_IDX_R]), 
-                                         &(pixels[id].p_buf[PIXEL_BUF_IDX_G]), 
-                                         &(pixels[id].p_buf[PIXEL_BUF_IDX_B]));
-
-    return (0);
-}
-
-int8_t pixel_get_hsi(uint8_t id, uint16_t *hue, uint8_t *intensity)
-{
-    M_CHECK_PIXEL_ID(id);
-
-    *hue =  pixels[id].hue;
-    *intensity =  pixels[id].intensity;
+    colorwheel_set_brightness(intensity, &(pixels[id].current_rgb.r), 
+                                         &(pixels[id].current_rgb.g), 
+                                         &(pixels[id].current_rgb.b));
 
     return (0);
 }
+
 
 int8_t pixel_dim(uint8_t id, uint8_t intensity)
 {
     M_CHECK_PIXEL_ID(id);
 
-    colorwheel_set_brightness(intensity, &(pixels[id].p_buf[PIXEL_BUF_IDX_R]), 
-                                         &(pixels[id].p_buf[PIXEL_BUF_IDX_G]), 
-                                         &(pixels[id].p_buf[PIXEL_BUF_IDX_B]));
+    colorwheel_set_brightness(intensity, &(pixels[id].current_rgb.r), 
+                                         &(pixels[id].current_rgb.g), 
+                                         &(pixels[id].current_rgb.b));
 
     return (0);
 }
 
 void pixel_update(void)
 {
+    for(uint8_t i = 0; i < PIXEL_NUM; i++){
+        g_pixel_rgb_buffer[(i*3)+0] = pixels[i].current_rgb.r;
+        g_pixel_rgb_buffer[(i*3)+1] = pixels[i].current_rgb.g;
+        g_pixel_rgb_buffer[(i*3)+2] = pixels[i].current_rgb.b;
+    }
     spi_xfer((uint8_t*)g_pixel_rgb_buffer, PIXEL_RGB_VAL_NUM);
     timebase_delay_ms(1);
 }
