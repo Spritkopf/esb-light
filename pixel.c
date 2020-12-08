@@ -34,7 +34,7 @@ void pixel_init(void)
     pixel_update();
 }
 
-int8_t pixel_get_rbg(uint8_t id, uint8_t *r, uint8_t *g, uint8_t *b)
+int8_t pixel_get_rgb(uint8_t id, uint8_t *r, uint8_t *g, uint8_t *b)
 {
     M_CHECK_PIXEL_ID(id);
 
@@ -45,7 +45,7 @@ int8_t pixel_get_rbg(uint8_t id, uint8_t *r, uint8_t *g, uint8_t *b)
     return (0);
 }
 
-int8_t pixel_set_rbg(uint8_t id, uint8_t r, uint8_t g, uint8_t b)
+int8_t pixel_set_rgb(uint8_t id, uint8_t r, uint8_t g, uint8_t b)
 {
     M_CHECK_PIXEL_ID(id);
 
@@ -56,13 +56,17 @@ int8_t pixel_set_rbg(uint8_t id, uint8_t r, uint8_t g, uint8_t b)
     return (0);
 }
 
-int8_t pixel_set_hsi(uint8_t id, uint16_t hue)
+int8_t pixel_set_hsi(uint8_t id, uint16_t hue, uint8_t intensity)
 {
     M_CHECK_PIXEL_ID(id);
 
     colorwheel_get_rgb(hue, &(pixels[id].p_buf[PIXEL_BUF_IDX_R]), 
                             &(pixels[id].p_buf[PIXEL_BUF_IDX_G]), 
                             &(pixels[id].p_buf[PIXEL_BUF_IDX_B]));
+
+    colorwheel_set_brightness(intensity, &(pixels[id].p_buf[PIXEL_BUF_IDX_R]), 
+                                         &(pixels[id].p_buf[PIXEL_BUF_IDX_G]), 
+                                         &(pixels[id].p_buf[PIXEL_BUF_IDX_B]));
 
     return (0);
 }
