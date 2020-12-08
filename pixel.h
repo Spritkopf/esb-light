@@ -6,6 +6,12 @@
 #define PIXEL_NUM   50
 #define PIXEL_HUE_MAX 360
 typedef struct{
+    uint8_t r;
+    uint8_t g;
+    uint8_t b;
+} color_t;
+
+typedef struct{
     uint16_t hue;
     uint8_t intensity;
     uint8_t *p_buf;

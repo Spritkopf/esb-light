@@ -3,6 +3,7 @@
 #include "colorwheel.h"
 #include "nrfx_spi.h"
 #include "nrf_gpio.h"
+#include "timebase.h"
 
 #define M_CHECK_PIXEL_ID(id)    do{if(id>PIXEL_NUM)return(-1);}while(0);
 #define PIXEL_BUF_IDX_R     0
@@ -26,8 +27,8 @@ void pixel_init(void)
     spi_init();
 
     /* set buffer pointers for pixels */
-    for(uint8_t i = 0; i < PIXEL_RGB_VAL_NUM; i+=3){
-        pixels[i].p_buf = &(g_pixel_rgb_buffer[i]);
+    for(uint8_t i = 0; i < PIXEL_NUM; i++){
+        pixels[i].p_buf = &(g_pixel_rgb_buffer[i*3]);
     }
 
     /* clear all pixels */
@@ -95,6 +96,7 @@ int8_t pixel_dim(uint8_t id, uint8_t intensity)
 void pixel_update(void)
 {
     spi_xfer((uint8_t*)g_pixel_rgb_buffer, PIXEL_RGB_VAL_NUM);
+    timebase_delay_ms(1);
 }
 
 /********************** STATIC FUNCTIONS ***********************/
