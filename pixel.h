@@ -52,10 +52,10 @@ int8_t pixel_set_hsi(uint8_t id, uint16_t hue, uint8_t intensity);
 /*!
  * \brief Set Brightness of specific pixel
  * \param id Pixel number (maximum PIXEL_NUM)
- * \param intensity intensity value (0 - 255)
+ * \param alpha intensity value (0 - 255, 0 = off, 255 = full brightness)
  * \returns 0 if OK, -1 on illegal pixel id
  */
-int8_t pixel_dim(uint8_t id, uint8_t intensity);
+int8_t pixel_dim(uint8_t id, uint8_t alpha);
 
 
 /*! \brief Set color on all pixels

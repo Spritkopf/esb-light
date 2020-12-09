@@ -1,4 +1,4 @@
-
+#include <string.h>
 #include "pixel.h"
 #include "colorwheel.h"
 #include "nrfx_spi.h"
@@ -11,12 +11,12 @@
 #define PIXEL_BUF_IDX_B     2
 
 #define PIXEL_RGB_VAL_NUM  (PIXEL_NUM*3)
+#define PIXEL_ALPHA_MAX     255
 
 typedef struct{
     color_t current_rgb;
+    uint8_t alpha;          /* value used for dimming, 0 = off, 255 = full brightness */
 } pixel_t;
-
-
 
 
 static nrfx_spi_t m_spi0 = NRFX_SPI_INSTANCE(0);
@@ -34,6 +34,7 @@ void pixel_init(void)
     spi_init();
 
     /* clear all pixels */
+    memset(pixels,0, sizeof(pixels));
     pixel_update();
 }
 
@@ -55,11 +56,12 @@ int8_t pixel_set_rgb(uint8_t id, uint8_t r, uint8_t g, uint8_t b)
     pixels[id].current_rgb.r = r;
     pixels[id].current_rgb.g = g;
     pixels[id].current_rgb.b = b;
+    pixels[id].alpha = PIXEL_ALPHA_MAX;
 
     return (0);
 }
 
-int8_t pixel_set_hsi(uint8_t id, uint16_t hue, uint8_t intensity)
+int8_t pixel_set_hsi(uint8_t id, uint16_t hue, uint8_t alpha)
 {
     M_CHECK_PIXEL_ID(id);
 
@@ -67,9 +69,9 @@ int8_t pixel_set_hsi(uint8_t id, uint16_t hue, uint8_t intensity)
                             &(pixels[id].current_rgb.g), 
                             &(pixels[id].current_rgb.b));
 
-    colorwheel_set_brightness(intensity, &(pixels[id].current_rgb.r), 
-                                         &(pixels[id].current_rgb.g), 
-                                         &(pixels[id].current_rgb.b));
+    colorwheel_set_brightness(alpha, &(pixels[id].current_rgb.r), 
+                                     &(pixels[id].current_rgb.g), 
+                                     &(pixels[id].current_rgb.b));
 
     return (0);
 }
@@ -79,9 +81,7 @@ int8_t pixel_dim(uint8_t id, uint8_t intensity)
 {
     M_CHECK_PIXEL_ID(id);
 
-    colorwheel_set_brightness(intensity, &(pixels[id].current_rgb.r), 
-                                         &(pixels[id].current_rgb.g), 
-                                         &(pixels[id].current_rgb.b));
+    pixels[id].alpha = intensity;
 
     return (0);
 }
@@ -92,6 +92,9 @@ void pixel_update(void)
         g_pixel_rgb_buffer[(i*3)+0] = pixels[i].current_rgb.r;
         g_pixel_rgb_buffer[(i*3)+1] = pixels[i].current_rgb.g;
         g_pixel_rgb_buffer[(i*3)+2] = pixels[i].current_rgb.b;
+        colorwheel_set_brightness(pixels[i].alpha, &(g_pixel_rgb_buffer[(i*3)+0]), 
+                                                   &(g_pixel_rgb_buffer[(i*3)+1]), 
+                                                   &(g_pixel_rgb_buffer[(i*3)+3]));
     }
     spi_xfer((uint8_t*)g_pixel_rgb_buffer, PIXEL_RGB_VAL_NUM);
     timebase_delay_ms(1);
