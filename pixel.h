@@ -5,12 +5,17 @@
 
 #define PIXEL_NUM   50
 #define PIXEL_HUE_MAX 360
+typedef enum {
+    FADE_IDLE   = 0x00,
+    FADE_ACTIVE = 0x01,
+    FADE_ERROR = 0x02
+} fade_state_t;
+
 typedef struct{
     uint8_t r;
     uint8_t g;
     uint8_t b;
 } color_t;
-
 
 /*!
  * \brief Initialize pixel module 
@@ -56,6 +61,25 @@ int8_t pixel_set_hsi(uint8_t id, uint16_t hue, uint8_t intensity);
  * \returns 0 if OK, -1 on illegal pixel id
  */
 int8_t pixel_dim(uint8_t id, uint8_t alpha);
+
+/*!
+ * \brief Setup fading
+ * \param id Pixel number (maximum PIXEL_NUM)
+ * \param target_rgb Target color (RGB values)
+ * \param steps amount of steps the fading should take (i.e. how many times "execute" must be called for the fade to complete)
+ * \returns 0 if OK, -1 on illegal pixel id or step value
+ * \note Set "steps" to 1 to change color immediately
+ */
+int8_t pixel_fading_setup(uint8_t id, color_t target_rgb, uint32_t steps);
+
+/*!
+ * \brief Execute fading steps on specific pixel
+ * \param id Pixel number (maximum PIXEL_NUM)
+ * \retval FADE_IDLE - done fading (current color = target color)
+ * \retval FADE_ACTIVE - fading in progress
+ * \retval FADE_ERROR - Illegal pixel ID provided
+ */
+fade_state_t pixel_fading_execute(uint8_t id);
 
 
 /*! \brief Set color on all pixels

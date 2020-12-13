@@ -16,6 +16,13 @@
 typedef struct{
     color_t current_rgb;
     uint8_t alpha;          /* value used for dimming, 0 = off, 255 = full brightness */
+    struct {
+        fade_state_t state;
+        color_t start_rgb;
+        color_t target_rgb;
+        uint32_t target_steps;
+        uint32_t current_step;
+    } fade_info;
 } pixel_t;
 
 
@@ -100,6 +107,45 @@ void pixel_update(void)
     timebase_delay_ms(1);
 }
 
+int8_t pixel_fading_setup(uint8_t id, color_t target_rgb, uint32_t steps)
+{
+    M_CHECK_PIXEL_ID(id);
+
+    if(steps == 0){
+        return (-1);
+    }
+
+    memcpy(&(pixels[id].fade_info.start_rgb), &(pixels[id].current_rgb), sizeof(color_t));
+    memcpy(&(pixels[id].fade_info.target_rgb), &target_rgb, sizeof(color_t));
+    pixels[id].fade_info.target_steps = steps;
+    pixels[id].fade_info.current_step = 0;
+    pixels[id].fade_info.state = FADE_ACTIVE;
+
+    return (0);
+}
+
+fade_state_t pixel_fading_execute(uint8_t id)
+{
+    if(id > PIXEL_NUM){
+        return (FADE_ERROR);
+    }
+    
+    /* check if fading is enabled on pixel */
+    if(pixels[id].fade_info.state == FADE_ACTIVE){
+        uint32_t current_step = pixels[id].fade_info.current_step;
+        int32_t steps = pixels[id].fade_info.target_steps;
+        int16_t r_diff = pixels[id].fade_info.target_rgb.r - pixels[id].fade_info.start_rgb.r;
+        int16_t g_diff = pixels[id].fade_info.target_rgb.g - pixels[id].fade_info.start_rgb.g;
+        int16_t b_diff = pixels[id].fade_info.target_rgb.b - pixels[id].fade_info.start_rgb.b;
+
+        /* calculate rgb values for current step*/
+        pixels[id].current_rgb.r = (uint8_t)((int32_t)pixels[id].fade_info.start_rgb.r +(((int32_t)current_step*r_diff)/steps));
+        pixels[id].current_rgb.g = (uint8_t)((int32_t)pixels[id].fade_info.start_rgb.g +(((int32_t)current_step*g_diff)/steps));
+        pixels[id].current_rgb.b = (uint8_t)((int32_t)pixels[id].fade_info.start_rgb.b +(((int32_t)current_step*b_diff)/steps));
+        pixels[id].fade_info.current_step++;
+    }
+    return (pixels[id].fade_info.state);
+}
 /********************** STATIC FUNCTIONS ***********************/
 
 void spi_init(void)
