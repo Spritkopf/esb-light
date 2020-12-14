@@ -2,15 +2,13 @@
 #define LED_EFFECTS_STATIC_H_
 
 #include <stdint.h>
-
+#include "pixel.h"
 
 /*!
  * \brief Set static RGB 
- * \param r   value RED
- * \param g   value GREEN
- * \param b   value BLUE
+ * \param color RGB color to set
  */
-void led_effects_static_set_rgb(uint8_t r, uint8_t g, uint8_t b);
+void led_effects_static_set_rgb(color_t color);
 
 /*!
  * \brief Set static HSI 
