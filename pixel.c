@@ -11,11 +11,9 @@
 #define PIXEL_BUF_IDX_B     2
 
 #define PIXEL_RGB_VAL_NUM  (PIXEL_NUM*3)
-#define PIXEL_ALPHA_MAX     255
 
 typedef struct{
     color_t current_rgb;
-    uint8_t alpha;          /* value used for dimming, 0 = off, 255 = full brightness */
     struct {
         fade_state_t state;
         color_t start_rgb;
@@ -63,12 +61,11 @@ int8_t pixel_set_rgb(uint8_t id, uint8_t r, uint8_t g, uint8_t b)
     pixels[id].current_rgb.r = r;
     pixels[id].current_rgb.g = g;
     pixels[id].current_rgb.b = b;
-    pixels[id].alpha = PIXEL_ALPHA_MAX;
 
     return (0);
 }
 
-int8_t pixel_set_hsi(uint8_t id, uint16_t hue, uint8_t alpha)
+int8_t pixel_set_hsi(uint8_t id, uint16_t hue, uint8_t intensity)
 {
     M_CHECK_PIXEL_ID(id);
 
@@ -76,9 +73,9 @@ int8_t pixel_set_hsi(uint8_t id, uint16_t hue, uint8_t alpha)
                             &(pixels[id].current_rgb.g), 
                             &(pixels[id].current_rgb.b));
 
-    colorwheel_set_brightness(alpha, &(pixels[id].current_rgb.r), 
-                                     &(pixels[id].current_rgb.g), 
-                                     &(pixels[id].current_rgb.b));
+    colorwheel_set_brightness(intensity, &(pixels[id].current_rgb.r), 
+                                         &(pixels[id].current_rgb.g), 
+                                         &(pixels[id].current_rgb.b));
 
     return (0);
 }
@@ -88,8 +85,9 @@ int8_t pixel_dim(uint8_t id, uint8_t intensity)
 {
     M_CHECK_PIXEL_ID(id);
 
-    pixels[id].alpha = intensity;
-
+    colorwheel_set_brightness(intensity, &(pixels[id].current_rgb.r), 
+                                         &(pixels[id].current_rgb.g), 
+                                         &(pixels[id].current_rgb.b));
     return (0);
 }
 
@@ -99,9 +97,6 @@ void pixel_update(void)
         g_pixel_rgb_buffer[(i*3)+0] = pixels[i].current_rgb.r;
         g_pixel_rgb_buffer[(i*3)+1] = pixels[i].current_rgb.g;
         g_pixel_rgb_buffer[(i*3)+2] = pixels[i].current_rgb.b;
-        colorwheel_set_brightness(pixels[i].alpha, &(g_pixel_rgb_buffer[(i*3)+0]), 
-                                                   &(g_pixel_rgb_buffer[(i*3)+1]), 
-                                                   &(g_pixel_rgb_buffer[(i*3)+3]));
     }
     spi_xfer((uint8_t*)g_pixel_rgb_buffer, PIXEL_RGB_VAL_NUM);
     timebase_delay_ms(1);
