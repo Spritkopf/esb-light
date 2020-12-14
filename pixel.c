@@ -129,6 +129,9 @@ fade_state_t pixel_fading_execute(uint8_t id)
     if(id > PIXEL_NUM){
         return (FADE_ERROR);
     }
+    uint8_t fade_finished_r = 0;
+    uint8_t fade_finished_g = 0;
+    uint8_t fade_finished_b = 0;
     
     /* check if fading is enabled on pixel */
     if(pixels[id].fade_info.state == FADE_ACTIVE){
@@ -139,10 +142,26 @@ fade_state_t pixel_fading_execute(uint8_t id)
         int16_t b_diff = pixels[id].fade_info.target_rgb.b - pixels[id].fade_info.start_rgb.b;
 
         /* calculate rgb values for current step*/
-        pixels[id].current_rgb.r = (uint8_t)((int32_t)pixels[id].fade_info.start_rgb.r +(((int32_t)current_step*r_diff)/steps));
-        pixels[id].current_rgb.g = (uint8_t)((int32_t)pixels[id].fade_info.start_rgb.g +(((int32_t)current_step*g_diff)/steps));
-        pixels[id].current_rgb.b = (uint8_t)((int32_t)pixels[id].fade_info.start_rgb.b +(((int32_t)current_step*b_diff)/steps));
+        if(pixels[id].current_rgb.r != pixels[id].fade_info.target_rgb.r){
+            pixels[id].current_rgb.r = (uint8_t)((int32_t)pixels[id].fade_info.start_rgb.r +(((int32_t)current_step*r_diff)/steps));
+        }else{
+            fade_finished_r = 1;
+        }
+        if(pixels[id].current_rgb.g != pixels[id].fade_info.target_rgb.g){
+            pixels[id].current_rgb.g = (uint8_t)((int32_t)pixels[id].fade_info.start_rgb.g +(((int32_t)current_step*g_diff)/steps));
+        }else{
+            fade_finished_g = 1;
+        }
+        if(pixels[id].current_rgb.b != pixels[id].fade_info.target_rgb.b){
+            pixels[id].current_rgb.b = (uint8_t)((int32_t)pixels[id].fade_info.start_rgb.b +(((int32_t)current_step*b_diff)/steps));
+        }else{
+            fade_finished_b = 1;
+        }
         pixels[id].fade_info.current_step++;
+
+        if((fade_finished_r==1) && (fade_finished_g==1) && (fade_finished_b==1)){
+            pixels[id].fade_info.state = FADE_IDLE;
+        }
     }
     return (pixels[id].fade_info.state);
 }
