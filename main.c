@@ -56,25 +56,20 @@
 #include "timebase.h"
 #include "esb_protocol.h"
 #include "debug_swo.h"
-#include "led.h"
 #include "led_effects.h"
 #include "colorwheel.h"
-static volatile uint32_t update_flag = 1;
-uint8_t test_colors[3] = {0};
+#include "pixel.h"
+
+#include "led_effects_static.h"
+#include "led_effects_fade.h"
+
+static volatile uint32_t test_flag = 1;
 
 static void button_handler(nrfx_gpiote_pin_t pin, nrf_gpiote_polarity_t action){
-    static uint16_t hue = 0;
 
     debug_swo_printf("BUTTON PRESSED\n");
-    memset(test_colors, 0x00, 3);
-
-    hue+=30;
-    if(hue>=360){
-        hue = 0;
-    }
-    colorwheel_get_rgb(hue, &test_colors[0],&test_colors[1],&test_colors[2]);
     
-    update_flag = 1;
+    test_flag = 1;
 }
 
 void clocks_start( void )
@@ -129,16 +124,18 @@ int main(void)
 
     rf_antenna_init();
 
-    led_init();
-    //led_effects_init();
-    
+    pixel_init();
+
+    led_effects_init();
+
+    led_effects_disable();      
+
     esb_protocol_init();
 	while (true)
 	{
-        if(1 == update_flag){
-            update_flag = 0;
-            led_set_all(test_colors[0],test_colors[1],test_colors[2]);
-            led_update();
+        if(1 == test_flag){
+            test_flag = 0;
+            // do something
         }
         esb_protocol_process();
 

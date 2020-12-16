@@ -93,7 +93,7 @@ int8_t pixel_dim(uint8_t id, uint8_t intensity)
                                          &(pixels[id].current_rgb.b));
 
     pixels[id].fade_info.state = FADE_IDLE;
-    
+
     return (0);
 }
 

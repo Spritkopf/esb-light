@@ -5,6 +5,8 @@
 #include "debug_swo.h"
 
 #include "led_effects.h"
+#include "led_effects_static.h"
+#include "led_effects_fade.h"
 
 
 #define ESB_CMD_STATIC_RGB       0x10    /* set static RGB value for all LEDs */
@@ -46,11 +48,17 @@ int8_t esb_protocol_process(void)
         switch(cmd){
         case ESB_CMD_STATIC_RGB:
             if (rx_payload_length == 4){
-                led_effects_static_rgb(rx_payload[1], rx_payload[2], rx_payload[3]);
+                color_t color = {.r = rx_payload[1], .g=rx_payload[2], .b=rx_payload[3]};
+                led_effects_static_set_rgb(color);
             }
             break;
         case ESB_CMD_SET_RGB_FADE:
-            led_effects_fade_rgb(0, 0, 0);
+            if (rx_payload_length == 9){
+                // payload: [cmd, pixel_id, r, g, b, time]
+                color_t target_color = {.r=rx_payload[2], .g=rx_payload[3], .b=rx_payload[4]};
+                uint32_t time = *(uint32_t*)&(rx_payload[5]);
+                led_effects_fade_to_color(rx_payload[1], target_color, time);
+            }
             break;
         case ESB_CMD_DISABLE:
             led_effects_disable();
