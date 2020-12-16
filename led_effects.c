@@ -27,9 +27,11 @@ static effect_state_fade_t g_effect_state_fade;
 /* start a timer for periodic updates of the enabled effects */
 static void start_effects_timer(void)
 {
-    uint32_t timeout_ticks = nrfx_timer_ms_to_ticks(&g_effects_timer, 1000/EFFECTS_UPDATE_FREQUENCY_HZ);
-    nrfx_timer_compare(&g_effects_timer, NRF_TIMER_CC_CHANNEL0, timeout_ticks, true);
-    nrfx_timer_enable(&g_effects_timer);
+    if(g_active_mode != LED_MODE_DISABLE){
+        uint32_t timeout_ticks = nrfx_timer_ms_to_ticks(&g_effects_timer, 1000/EFFECTS_UPDATE_FREQUENCY_HZ);
+        nrfx_timer_compare(&g_effects_timer, NRF_TIMER_CC_CHANNEL0, timeout_ticks, true);
+        nrfx_timer_enable(&g_effects_timer);
+    }
 }
 
 static void stop_effects_timer(void)

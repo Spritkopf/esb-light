@@ -48,6 +48,7 @@ static void nrf_esb_event_handler(nrf_esb_evt_t const * p_event)
             break;
         case NRF_ESB_EVENT_RX_RECEIVED:
             debug_swo_printf("RX RECEIVED EVENT\n");
+            memset(&rx_payload, 0, sizeof(nrf_esb_payload_t));
             while (nrf_esb_read_rx_payload(&rx_payload) == NRF_SUCCESS){
                 if (rx_payload.length > 0){
                     if(rx_payload.pipe < ESB_PIPE_NUM){
@@ -107,7 +108,7 @@ int8_t esb_init(void)
     g_nrf_esb_config.retransmit_delay         = 600;
     g_nrf_esb_config.retransmit_count         = 10;
     g_nrf_esb_config.tx_mode                  = NRF_ESB_TXMODE_AUTO;
-    g_nrf_esb_config.selective_auto_ack       = false;
+    g_nrf_esb_config.selective_auto_ack       = true;
 
     if(nrf_esb_init(&g_nrf_esb_config) != NRF_SUCCESS){
         return (ESB_ERR_HAL);

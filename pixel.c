@@ -61,6 +61,7 @@ int8_t pixel_set_rgb(uint8_t id, uint8_t r, uint8_t g, uint8_t b)
     pixels[id].current_rgb.r = r;
     pixels[id].current_rgb.g = g;
     pixels[id].current_rgb.b = b;
+    pixels[id].fade_info.state = FADE_IDLE;
 
     return (0);
 }
@@ -77,6 +78,8 @@ int8_t pixel_set_hsi(uint8_t id, uint16_t hue, uint8_t intensity)
                                          &(pixels[id].current_rgb.g), 
                                          &(pixels[id].current_rgb.b));
 
+    pixels[id].fade_info.state = FADE_IDLE;
+
     return (0);
 }
 
@@ -88,6 +91,9 @@ int8_t pixel_dim(uint8_t id, uint8_t intensity)
     colorwheel_set_brightness(intensity, &(pixels[id].current_rgb.r), 
                                          &(pixels[id].current_rgb.g), 
                                          &(pixels[id].current_rgb.b));
+
+    pixels[id].fade_info.state = FADE_IDLE;
+    
     return (0);
 }
 
