@@ -9,12 +9,14 @@ typedef enum{
     LED_EFFECTS_FADE_ERROR  = 0x02
 } led_effects_fade_status_t;
 
+
 /*! \brief Fade pixel from currently active color to target color
  *  \param target_color Target Color
  *  \param time_msec duration of the fading in milliseconds
- *  \returns 0 if OK, -1 on illegal pixel id
+ *  \param mode fading mode (oneshot / continuously, see ::pixel_fade_mode_t)
+ *  \returns 0 if OK, -1 on illegal pixel id or fading mode
  */
-int8_t led_effects_fade_to_color(uint8_t id, color_t target_color, uint32_t time_msec);
+int8_t led_effects_fade_to_color(uint8_t id, color_t target_color, uint32_t time_msec, pixel_fade_mode_t mode);
 
 
 /* \brief Execute fading

@@ -15,7 +15,8 @@
 typedef struct{
     color_t current_rgb;
     struct {
-        fade_state_t state;
+        pixel_fade_state_t state;
+        pixel_fade_mode_t mode;
         color_t start_rgb;
         color_t target_rgb;
         uint32_t target_steps;
@@ -108,12 +109,16 @@ void pixel_update(void)
     timebase_delay_ms(1);
 }
 
-int8_t pixel_fading_setup(uint8_t id, color_t target_rgb, uint32_t steps)
+int8_t pixel_fading_setup(uint8_t id, color_t target_rgb, uint32_t steps, pixel_fade_mode_t mode)
 {
     M_CHECK_PIXEL_ID(id);
 
     if(steps == 0){
-        return (-1);
+        return (-2);
+    }
+
+    if((mode != PIXEL_FADE_MODE_ONESHOT) && (mode != PIXEL_FADE_MODE_CONT)){
+        return (-3);
     }
 
     //memcpy(&(pixels[id].fade_info.start_rgb), &(pixels[id].current_rgb), sizeof(color_t));
@@ -123,6 +128,7 @@ int8_t pixel_fading_setup(uint8_t id, color_t target_rgb, uint32_t steps)
     pixels[id].fade_info.target_steps = steps;
     pixels[id].fade_info.current_step = 0;
     pixels[id].fade_info.state = FADE_ACTIVE;
+    pixels[id].fade_info.mode = mode;
 
     return (0);
 }
@@ -135,13 +141,18 @@ int8_t pixel_fading_reverse(uint8_t id)
 
     pixels[id].fade_info.start_rgb = pixels[id].fade_info.target_rgb;
     pixels[id].fade_info.target_rgb = temp_rgb;
-    pixels[id].fade_info.current_step = pixels[id].fade_info.target_steps - pixels[id].fade_info.current_step;
+
+    if(pixels[id].fade_info.target_steps >= pixels[id].fade_info.current_step){
+        pixels[id].fade_info.current_step = pixels[id].fade_info.target_steps - pixels[id].fade_info.current_step;
+    }else{
+        pixels[id].fade_info.current_step = 0;
+    }
     pixels[id].fade_info.state = FADE_ACTIVE;
 
     return (0);
 }
 
-fade_state_t pixel_fading_execute(uint8_t id)
+pixel_fade_state_t pixel_fading_execute(uint8_t id)
 {
     if(id > PIXEL_NUM){
         return (FADE_ERROR);
@@ -177,7 +188,11 @@ fade_state_t pixel_fading_execute(uint8_t id)
         pixels[id].fade_info.current_step++;
 
         if((fade_finished_r==1) && (fade_finished_g==1) && (fade_finished_b==1)){
-            pixels[id].fade_info.state = FADE_IDLE;
+            if(pixels[id].fade_info.mode == PIXEL_FADE_MODE_ONESHOT){
+                pixels[id].fade_info.state = FADE_IDLE;
+            }else{
+                pixel_fading_reverse(id);
+            }
         }
     }
     return (pixels[id].fade_info.state);

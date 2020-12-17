@@ -9,7 +9,12 @@ typedef enum {
     FADE_IDLE   = 0x00,
     FADE_ACTIVE = 0x01,
     FADE_ERROR = 0x02
-} fade_state_t;
+} pixel_fade_state_t;
+
+typedef enum{
+    PIXEL_FADE_MODE_ONESHOT = 0x00,   /* only fade to target color and stop */
+    PIXEL_FADE_MODE_CONT = 0x01       /* fade to target, then back to beginning, and so on */
+} pixel_fade_mode_t;
 
 typedef struct{
     uint8_t r;
@@ -67,10 +72,11 @@ int8_t pixel_dim(uint8_t id, uint8_t intensity);
  * \param id Pixel number (maximum PIXEL_NUM)
  * \param target_rgb Target color (RGB values)
  * \param steps amount of steps the fading should take (i.e. how many times "execute" must be called for the fade to complete)
- * \returns 0 if OK, -1 on illegal pixel id or step value
+ * \param mode fading mode (oneshot / continuously, see ::pixel_fade_mode_t)
+ * \returns 0 if OK, -1 on illegal pixel id, -2 on step value, -3 illegal mode
  * \note Set "steps" to 1 to change color immediately
  */
-int8_t pixel_fading_setup(uint8_t id, color_t target_rgb, uint32_t steps);
+int8_t pixel_fading_setup(uint8_t id, color_t target_rgb, uint32_t steps, pixel_fade_mode_t mode);
 
 /*!
  * \brief Reverse fading
@@ -89,7 +95,7 @@ int8_t pixel_fading_reverse(uint8_t id);
  * \retval FADE_ACTIVE - fading in progress
  * \retval FADE_ERROR - Illegal pixel ID provided
  */
-fade_state_t pixel_fading_execute(uint8_t id);
+pixel_fade_state_t pixel_fading_execute(uint8_t id);
 
 
 /*! \brief Set color on all pixels
