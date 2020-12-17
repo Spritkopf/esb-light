@@ -73,6 +73,16 @@ int8_t pixel_dim(uint8_t id, uint8_t intensity);
 int8_t pixel_fading_setup(uint8_t id, color_t target_rgb, uint32_t steps);
 
 /*!
+ * \brief Reverse fading
+ * \param id Pixel number (maximum PIXEL_NUM)
+ * \details This function switches start and target color of a pixels fading configuration.
+ *          Fading must be setup before by calling ::pixel_fading_setup. If the fading status
+ *          of the specified pixel is currently IDLE, fading is restarted 
+ * \returns 0 if OK, -1 on illegal pixel id
+ */
+int8_t pixel_fading_reverse(uint8_t id);
+
+/*!
  * \brief Execute fading steps on specific pixel
  * \param id Pixel number (maximum PIXEL_NUM)
  * \retval FADE_IDLE - done fading (current color = target color)

@@ -116,10 +116,26 @@ int8_t pixel_fading_setup(uint8_t id, color_t target_rgb, uint32_t steps)
         return (-1);
     }
 
-    memcpy(&(pixels[id].fade_info.start_rgb), &(pixels[id].current_rgb), sizeof(color_t));
-    memcpy(&(pixels[id].fade_info.target_rgb), &target_rgb, sizeof(color_t));
+    //memcpy(&(pixels[id].fade_info.start_rgb), &(pixels[id].current_rgb), sizeof(color_t));
+    //memcpy(&(pixels[id].fade_info.target_rgb), &target_rgb, sizeof(color_t));
+    pixels[id].fade_info.start_rgb = pixels[id].current_rgb;
+    pixels[id].fade_info.target_rgb = target_rgb;
     pixels[id].fade_info.target_steps = steps;
     pixels[id].fade_info.current_step = 0;
+    pixels[id].fade_info.state = FADE_ACTIVE;
+
+    return (0);
+}
+
+int8_t pixel_fading_reverse(uint8_t id)
+{
+    M_CHECK_PIXEL_ID(id);
+
+    color_t temp_rgb = pixels[id].fade_info.start_rgb;
+
+    pixels[id].fade_info.start_rgb = pixels[id].fade_info.target_rgb;
+    pixels[id].fade_info.target_rgb = temp_rgb;
+    pixels[id].fade_info.current_step = pixels[id].fade_info.target_steps - pixels[id].fade_info.current_step;
     pixels[id].fade_info.state = FADE_ACTIVE;
 
     return (0);
@@ -171,6 +187,7 @@ fade_state_t pixel_fading_execute(uint8_t id)
 void spi_init(void)
 {
     nrfx_spi_config_t config = NRFX_SPI_DEFAULT_CONFIG;
+    config.frequency = NRF_SPI_FREQ_8M;
     config.sck_pin = NRF_GPIO_PIN_MAP(1,15);
     config.mosi_pin = NRF_GPIO_PIN_MAP(1,13);
     nrfx_spi_init(&m_spi0, &config, NULL, NULL);

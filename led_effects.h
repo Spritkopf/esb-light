@@ -3,7 +3,7 @@
 
 #include <stdint.h>
 
-#define EFFECTS_UPDATE_FREQUENCY_HZ   20
+#define EFFECTS_UPDATE_FREQUENCY_HZ   35
 
 typedef enum{
     LED_MODE_STATIC,
