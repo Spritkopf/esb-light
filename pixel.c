@@ -202,7 +202,7 @@ pixel_fade_state_t pixel_fading_execute(uint8_t id)
 void spi_init(void)
 {
     nrfx_spi_config_t config = NRFX_SPI_DEFAULT_CONFIG;
-    config.frequency = NRF_SPI_FREQ_8M;
+    config.frequency = NRF_SPI_FREQ_2M;
     config.sck_pin = NRF_GPIO_PIN_MAP(1,15);
     config.mosi_pin = NRF_GPIO_PIN_MAP(1,13);
     nrfx_spi_init(&m_spi0, &config, NULL, NULL);
