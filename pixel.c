@@ -19,6 +19,7 @@ typedef struct{
         pixel_fade_mode_t mode;
         color_t start_rgb;
         color_t target_rgb;
+        color_t target_tmp_rgb;
         uint32_t target_steps;
         uint32_t current_step;
     } fade_info;
@@ -109,7 +110,7 @@ void pixel_update(void)
     timebase_delay_ms(1);
 }
 
-int8_t pixel_fading_setup(uint8_t id, color_t target_rgb, uint32_t steps, pixel_fade_mode_t mode)
+int8_t pixel_fading_setup(uint8_t id, color_t *target_rgb, color_t *start_rgb, uint32_t steps, pixel_fade_mode_t mode)
 {
     M_CHECK_PIXEL_ID(id);
 
@@ -121,10 +122,18 @@ int8_t pixel_fading_setup(uint8_t id, color_t target_rgb, uint32_t steps, pixel_
         return (-3);
     }
 
-    //memcpy(&(pixels[id].fade_info.start_rgb), &(pixels[id].current_rgb), sizeof(color_t));
-    //memcpy(&(pixels[id].fade_info.target_rgb), &target_rgb, sizeof(color_t));
+    if(target_rgb == NULL){
+        return (-4);
+    }
+
+    if(start_rgb == NULL){
+        pixels[id].fade_info.target_rgb = *target_rgb;
+        pixels[id].fade_info.target_tmp_rgb = pixels[id].current_rgb;
+    }else{
+        pixels[id].fade_info.target_rgb = *start_rgb;
+        pixels[id].fade_info.target_tmp_rgb = *target_rgb;
+    }
     pixels[id].fade_info.start_rgb = pixels[id].current_rgb;
-    pixels[id].fade_info.target_rgb = target_rgb;
     pixels[id].fade_info.target_steps = steps;
     pixels[id].fade_info.current_step = 0;
     pixels[id].fade_info.state = FADE_ACTIVE;
@@ -137,10 +146,9 @@ int8_t pixel_fading_reverse(uint8_t id)
 {
     M_CHECK_PIXEL_ID(id);
 
-    color_t temp_rgb = pixels[id].fade_info.start_rgb;
-
-    pixels[id].fade_info.start_rgb = pixels[id].fade_info.target_rgb;
-    pixels[id].fade_info.target_rgb = temp_rgb;
+    pixels[id].fade_info.target_tmp_rgb = pixels[id].fade_info.target_rgb;
+    pixels[id].fade_info.target_rgb = pixels[id].fade_info.start_rgb;
+    pixels[id].fade_info.start_rgb = pixels[id].fade_info.target_tmp_rgb;
 
     if(pixels[id].fade_info.target_steps >= pixels[id].fade_info.current_step){
         pixels[id].fade_info.current_step = pixels[id].fade_info.target_steps - pixels[id].fade_info.current_step;
@@ -191,6 +199,9 @@ pixel_fade_state_t pixel_fading_execute(uint8_t id)
             if(pixels[id].fade_info.mode == PIXEL_FADE_MODE_ONESHOT){
                 pixels[id].fade_info.state = FADE_IDLE;
             }else{
+                if(memcmp(&(pixels[id].fade_info.target_tmp_rgb),&(pixels[id].fade_info.start_rgb), sizeof(color_t)) != 0){
+                    pixels[id].fade_info.start_rgb = pixels[id].fade_info.target_tmp_rgb;
+                }
                 pixel_fading_reverse(id);
             }
         }
