@@ -62,10 +62,10 @@ int8_t pixel_set_hsi(uint8_t id, uint16_t hue, uint8_t intensity);
 /*!
  * \brief Set Brightness of specific pixel
  * \param id Pixel number (maximum PIXEL_NUM)
- * \param intensity intensity value (0 - 255, 0 = off, 255 = full brightness)
+ * \param brightness brightness value (0 - 255, 0 = off, 255 = full brightness)
  * \returns 0 if OK, -1 on illegal pixel id
  */
-int8_t pixel_dim(uint8_t id, uint8_t intensity);
+int8_t pixel_set_brightness(uint8_t id, uint8_t brightness);
 
 /*!
  * \brief Setup fading
@@ -73,12 +73,13 @@ int8_t pixel_dim(uint8_t id, uint8_t intensity);
  * \param target_rgb pointer to target color (RGB values)
  * \param start_color pointer to start color (set to NULL to use current color)
  * \param steps amount of steps the fading should take (i.e. how many times "execute" must be called for the fade to complete)
+ * \param start_step at which step the fading should start, 0 <= start_steps < steps
  * \param mode fading mode (oneshot / continuously, see ::pixel_fade_mode_t)
  * \returns 0 if OK, -1 on illegal pixel id, -2 on step value, -3 illegal mode, -4 NULL pointer
  * \details If start color is supplied, pixel will fade from current to start color, then alternate between target and start color (only in continuous mode)
  * \note Set "steps" to 1 to change color immediately
  */
-int8_t pixel_fading_setup(uint8_t id, color_t *target_rgb, color_t *start_rgb, uint32_t steps, pixel_fade_mode_t mode);
+int8_t pixel_fading_setup(uint8_t id, color_t *target_rgb, color_t *start_rgb, uint32_t steps, uint32_t start_step, pixel_fade_mode_t mode);
 
 /*!
  * \brief Reverse fading

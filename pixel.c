@@ -23,6 +23,7 @@ typedef struct{
         uint32_t target_steps;
         uint32_t current_step;
     } fade_info;
+    uint8_t brightness;
 } pixel_t;
 
 
@@ -86,15 +87,11 @@ int8_t pixel_set_hsi(uint8_t id, uint16_t hue, uint8_t intensity)
 }
 
 
-int8_t pixel_dim(uint8_t id, uint8_t intensity)
+int8_t pixel_set_brightness(uint8_t id, uint8_t brightness)
 {
     M_CHECK_PIXEL_ID(id);
 
-    colorwheel_set_brightness(intensity, &(pixels[id].current_rgb.r), 
-                                         &(pixels[id].current_rgb.g), 
-                                         &(pixels[id].current_rgb.b));
-
-    pixels[id].fade_info.state = FADE_IDLE;
+    pixels[id].brightness = brightness;
 
     return (0);
 }
@@ -105,16 +102,18 @@ void pixel_update(void)
         g_pixel_rgb_buffer[(i*3)+0] = pixels[i].current_rgb.r;
         g_pixel_rgb_buffer[(i*3)+1] = pixels[i].current_rgb.g;
         g_pixel_rgb_buffer[(i*3)+2] = pixels[i].current_rgb.b;
+
+        colorwheel_set_brightness(pixels[i].brightness, &(g_pixel_rgb_buffer[(i*3)+0]), &(g_pixel_rgb_buffer[(i*3)+1]), &(g_pixel_rgb_buffer[(i*3)+2]));
     }
     spi_xfer((uint8_t*)g_pixel_rgb_buffer, PIXEL_RGB_VAL_NUM);
     timebase_delay_ms(1);
 }
 
-int8_t pixel_fading_setup(uint8_t id, color_t *target_rgb, color_t *start_rgb, uint32_t steps, pixel_fade_mode_t mode)
+int8_t pixel_fading_setup(uint8_t id, color_t *target_rgb, color_t *start_rgb, uint32_t steps, uint32_t start_step, pixel_fade_mode_t mode)
 {
     M_CHECK_PIXEL_ID(id);
 
-    if(steps == 0){
+    if((steps == 0) || (start_step >= steps)){
         return (-2);
     }
 
@@ -135,7 +134,7 @@ int8_t pixel_fading_setup(uint8_t id, color_t *target_rgb, color_t *start_rgb, u
     }
     pixels[id].fade_info.start_rgb = pixels[id].current_rgb;
     pixels[id].fade_info.target_steps = steps;
-    pixels[id].fade_info.current_step = 0;
+    pixels[id].fade_info.current_step = start_step;
     pixels[id].fade_info.state = FADE_ACTIVE;
     pixels[id].fade_info.mode = mode;
 

@@ -8,9 +8,11 @@
 led_effects_fade_status_t g_fade_status = LED_EFFECTS_FADE_DONE;
 
 /* \brief Set fade target rgb */
-int8_t led_effects_fade_to_color(uint8_t id, color_t *target_color, color_t *start_color, uint32_t time_msec, pixel_fade_mode_t mode)
+int8_t led_effects_fade_to_color(uint8_t id, color_t *target_color, color_t *start_color, uint32_t time_msec, uint8_t start_time, pixel_fade_mode_t mode)
 {
-    if(pixel_fading_setup(id, target_color, start_color, M_MSEC_TO_STEPS(time_msec), mode) != 0){
+    uint32_t steps = M_MSEC_TO_STEPS(time_msec);
+    uint32_t start_step = ((steps * start_time) / 255);
+    if(pixel_fading_setup(id, target_color, start_color, steps, start_step, mode) != 0){
         return (-1);
     }
     led_effects_set_mode(LED_MODE_FADE);
@@ -22,7 +24,7 @@ int8_t led_effects_fade_to_color(uint8_t id, color_t *target_color, color_t *sta
 /* \brief Execute fading
  * \returns LED_EFFECTS_FADE_ACTIVE if currently fading, 
  *          LED_EFFECTS_FADE_DONE if target RGB is reached, 
- *          LED_EFFECTS_FADE_ERROR on error 
+ *          LED_EFFECTS_FADE_ERROR on error B
  */
 led_effects_fade_status_t led_effects_fade_execute(void)
 {
