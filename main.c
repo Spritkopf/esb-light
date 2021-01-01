@@ -120,7 +120,7 @@ int main(void)
     timebase_init();
     
     /* turn user LED on*/
-    nrf_gpio_pin_set(NRF_GPIO_PIN_MAP(1, 12));
+    //nrf_gpio_pin_set(NRF_GPIO_PIN_MAP(1, 12));
 
     rf_antenna_init();
 
