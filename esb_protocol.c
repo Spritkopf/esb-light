@@ -11,7 +11,7 @@
 
 
 #define ESB_CMD_STATIC_RGB       0x10    /* set static RGB value for all LEDs */
-#define ESB_CMD_SET_RGB_SPARKLE  0x11    /* set RGB values sparkling effect */
+#define ESB_CMD_STATIC_RGB_FADE  0x11    /* Fade all LEDs to target color */
 #define ESB_CMD_FADE             0x12    /* set RGB values fading effect */
 #define ESB_CMD_FADE_CONT        0x13    /* set RGB values and fade between current RGB and target RGB continuously */
 #define ESB_CMD_ENABLE           0x20    /* Enable LEDs (set last RGB value)*/
@@ -58,6 +58,16 @@ int8_t esb_protocol_process(void)
                 g_last_color.g = rx_payload[2];
                 g_last_color.b = rx_payload[3];
                 led_effects_static_set_rgb(g_last_color);
+            }
+            break;
+        case ESB_CMD_STATIC_RGB_FADE:
+            // payload: [cmd, r, g, b, time]
+            if (rx_payload_length == 8){
+                color_t target_color = {.r=rx_payload[2], .g=rx_payload[3], .b=rx_payload[4]};
+                uint32_t time = *(uint32_t*)&(rx_payload[5]);
+                for(uint8_t i = 0; i < PIXEL_NUM; i++){
+                    led_effects_fade_to_color(rx_payload[1], &target_color, NULL, time, 0, PIXEL_FADE_MODE_ONESHOT);
+                }
             }
             break;
         case ESB_CMD_FADE:
