@@ -14,7 +14,8 @@
 #define ESB_CMD_SET_RGB_SPARKLE  0x11    /* set RGB values sparkling effect */
 #define ESB_CMD_FADE             0x12    /* set RGB values fading effect */
 #define ESB_CMD_FADE_CONT        0x13    /* set RGB values and fade between current RGB and target RGB continuously */
-#define ESB_CMD_DISABLE          0x20    /* Disable LEDs */
+#define ESB_CMD_ENABLE           0x20    /* Enable LEDs (set last RGB value)*/
+#define ESB_CMD_DISABLE          0x21    /* Disable LEDs */
 #define ESB_CMD_BRIGHTNESS_ALL   0x30    /* set brightness for all pixels*/
 
 
@@ -23,6 +24,8 @@ static uint8_t esb_listener_address[5] = {100,100,100,100,1};
 static uint8_t rx_payload[32];
 static uint8_t rx_payload_length;
 static volatile uint8_t pending_flag = 0;
+
+static color_t g_last_color = {.r=0, .g=0, .b=0};
 
 static void esb_listener_callback(uint8_t *payload, uint8_t payload_length)
 {
@@ -51,8 +54,10 @@ int8_t esb_protocol_process(void)
         switch(cmd){
         case ESB_CMD_STATIC_RGB:
             if (rx_payload_length == 4){
-                color_t color = {.r = rx_payload[1], .g=rx_payload[2], .b=rx_payload[3]};
-                led_effects_static_set_rgb(color);
+                g_last_color.r = rx_payload[1];
+                g_last_color.g = rx_payload[2];
+                g_last_color.b = rx_payload[3];
+                led_effects_static_set_rgb(g_last_color);
             }
             break;
         case ESB_CMD_FADE:
@@ -81,6 +86,11 @@ int8_t esb_protocol_process(void)
                 uint32_t time = *(uint32_t*)&(rx_payload[5]);
                 uint8_t start_time = rx_payload[9];
                 led_effects_fade_to_color(rx_payload[1], &target_color, p_start_color, time, start_time, PIXEL_FADE_MODE_CONT);
+            }
+            break;
+        case ESB_CMD_ENABLE:
+            if (rx_payload_length == 1){
+                led_effects_static_set_rgb(g_last_color);
             }
             break;
         case ESB_CMD_DISABLE:
