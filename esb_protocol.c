@@ -26,6 +26,7 @@ static uint8_t rx_payload_length;
 static volatile uint8_t pending_flag = 0;
 
 static color_t g_last_color = {.r=0, .g=0, .b=0};
+static uint8_t g_active_flag = 0;
 
 static void esb_listener_callback(uint8_t *payload, uint8_t payload_length)
 {
@@ -53,33 +54,40 @@ int8_t esb_protocol_process(void)
         uint8_t cmd = rx_payload[0];
         switch(cmd){
         case ESB_CMD_STATIC_RGB:
+            debug_swo_printf("rgb\n");
             if (rx_payload_length == 4){
                 g_last_color.r = rx_payload[1];
                 g_last_color.g = rx_payload[2];
                 g_last_color.b = rx_payload[3];
                 led_effects_static_set_rgb(g_last_color);
+                g_active_flag = 1;
             }
             break;
         case ESB_CMD_STATIC_RGB_FADE:
+            debug_swo_printf("rgb_fade\n");
             // payload: [cmd, r, g, b, time]
             if (rx_payload_length == 8){
-                color_t target_color = {.r=rx_payload[2], .g=rx_payload[3], .b=rx_payload[4]};
-                uint32_t time = *(uint32_t*)&(rx_payload[5]);
+                color_t target_color = {.r=rx_payload[1], .g=rx_payload[2], .b=rx_payload[3]};
+                uint32_t time = *(uint32_t*)&(rx_payload[4]);
                 for(uint8_t i = 0; i < PIXEL_NUM; i++){
-                    led_effects_fade_to_color(rx_payload[1], &target_color, NULL, time, 0, PIXEL_FADE_MODE_ONESHOT);
+                    led_effects_fade_to_color(i, &target_color, NULL, time, 0, PIXEL_FADE_MODE_ONESHOT);
                 }
+                g_active_flag = 1;
             }
             break;
         case ESB_CMD_FADE:
+            debug_swo_printf("fade\n");
             if (rx_payload_length == 10){
                 // payload: [cmd, pixel_id, r, g, b, time, start_time]
                 color_t target_color = {.r=rx_payload[2], .g=rx_payload[3], .b=rx_payload[4]};
                 uint32_t time = *(uint32_t*)&(rx_payload[5]);
                 uint8_t start_time = rx_payload[9];
                 led_effects_fade_to_color(rx_payload[1], &target_color, NULL, time, start_time, PIXEL_FADE_MODE_ONESHOT);
+                g_active_flag = 1;
             }
             break;
         case ESB_CMD_FADE_CONT:
+            debug_swo_printf("fade_cont\n");
             if ((rx_payload_length == 10) || (rx_payload_length == 13)){
                 // payload: [cmd, pixel_id, r, g, b, time, start_time, (,r,g,b)] (last 3 values optional, fade start color)
                 color_t target_color = {.r=rx_payload[2], .g=rx_payload[3], .b=rx_payload[4]};
@@ -96,17 +104,23 @@ int8_t esb_protocol_process(void)
                 uint32_t time = *(uint32_t*)&(rx_payload[5]);
                 uint8_t start_time = rx_payload[9];
                 led_effects_fade_to_color(rx_payload[1], &target_color, p_start_color, time, start_time, PIXEL_FADE_MODE_CONT);
+                g_active_flag = 1;
             }
             break;
         case ESB_CMD_ENABLE:
-            if (rx_payload_length == 1){
+            debug_swo_printf("enable\n");
+            if ((rx_payload_length == 1) && (g_active_flag == 0)){
                 led_effects_static_set_rgb(g_last_color);
+                debug_swo_printf("setting last rgb\n");
             }
             break;
         case ESB_CMD_DISABLE:
+            debug_swo_printf("disable\n");
             led_effects_disable();
+            g_active_flag = 0;
             break;
         case ESB_CMD_BRIGHTNESS_ALL:
+            debug_swo_printf("brightness\n");
             if (rx_payload_length == 2){
                 for(uint8_t i = 0; i < PIXEL_NUM; i++){
                     pixel_set_brightness(i, rx_payload[1]);
