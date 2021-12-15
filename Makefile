@@ -5,7 +5,7 @@ OUTPUT_DIRECTORY := _build
 GNU_INSTALL_ROOT := 
 SDK_ROOT := $(HOME)/opt/nrf5x-sdk/nRF5_SDK_17.0.0_9d13099
 PROJ_DIR := .
-
+ESB_HOME_DIR := ./lib/esb-home-fw
 $(OUTPUT_DIRECTORY)/esb_light.out: \
   LINKER_SCRIPT  := esb_ptx_gcc_nrf52.ld
 
@@ -13,8 +13,13 @@ $(OUTPUT_DIRECTORY)/esb_light.out: \
 SRC_FILES += \
   $(PROJ_DIR)/main.c \
   $(PROJ_DIR)/timebase.c \
-  $(PROJ_DIR)/esb.c \
-  $(PROJ_DIR)/esb_protocol.c \
+  $(ESB_HOME_DIR)/common/driver/esb.c \
+  $(ESB_HOME_DIR)/common/protocol/esb_protocol.c \
+  $(ESB_HOME_DIR)/common/commands/esb_commands.c \
+  $(ESB_HOME_DIR)/common/commands/esb_cmd_def_common.c \
+  $(ESB_HOME_DIR)/light/esb_light.c \
+  $(ESB_HOME_DIR)/light/esb_light_cmd_def.c \
+  $(PROJ_DIR)/esb_light_app_if.c \
   $(PROJ_DIR)/debug_swo.c \
   $(PROJ_DIR)/led_effects.c \
   $(PROJ_DIR)/led_effects_static.c \
@@ -28,6 +33,7 @@ SRC_FILES += \
   $(SDK_ROOT)/components/libraries/util/nrf_assert.c \
   $(SDK_ROOT)/components/libraries/strerror/nrf_strerror.c \
   $(SDK_ROOT)/components/libraries/sortlist/nrf_sortlist.c \
+  $(SDK_ROOT)/components/libraries/queue/nrf_queue.c \
   $(SDK_ROOT)/components/libraries/util/app_error.c \
   $(SDK_ROOT)/components/libraries/util/app_error_handler_gcc.c \
   $(SDK_ROOT)/components/libraries/util/app_error_weak.c \
@@ -46,14 +52,13 @@ SRC_FILES += \
 # Include folders common to all targets
 INC_FOLDERS += \
   $(PROJ_DIR) \
+  $(ESB_HOME_DIR) \
   $(SDK_ROOT)/components \
   $(SDK_ROOT)/components/toolchain/cmsis/include \
   $(SDK_ROOT)/components/drivers_nrf/nrf_soc_nosd \
   $(SDK_ROOT)/components/proprietary_rf/esb \
   $(SDK_ROOT)/components/libraries/strerror \
   $(SDK_ROOT)/components/libraries/util \
-  $(SDK_ROOT)/components/libraries/balloc \
-  $(SDK_ROOT)/components/libraries/ringbuf \
   $(SDK_ROOT)/components/libraries/bsp \
   $(SDK_ROOT)/components/libraries/log \
   $(SDK_ROOT)/components/libraries/sortlist \
@@ -61,6 +66,7 @@ INC_FOLDERS += \
   $(SDK_ROOT)/components/libraries/log/src \
   $(SDK_ROOT)/components/libraries/delay \
   $(SDK_ROOT)/components/libraries/timer \
+  $(SDK_ROOT)/components/libraries/queue \
   $(SDK_ROOT)/components/boards \
   $(SDK_ROOT)/integration/nrfx/legacy \
   $(SDK_ROOT)/integration/nrfx \

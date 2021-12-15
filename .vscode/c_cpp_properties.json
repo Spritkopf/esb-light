@@ -16,7 +16,7 @@
                 "NRF52840_XXAA",
                 "ENABLE_SWO"
             ],
-            "compilerPath": "${env:HOME}/opt/gnu-mcu-eclipse/arm-none-eabi-gcc/7.3.1-1.1-20180724-0637/bin//arm-none-eabi-gcc",
+            "compilerPath": "${env:HOME}/opt/gnu-mcu-eclipse/arm-none-eabi-gcc/7.3.1-1.1-20180724-0637/bin/arm-none-eabi-gcc",
             "cStandard": "gnu11",
             "cppStandard": "gnu++14",
             "intelliSenseMode": "gcc-arm",

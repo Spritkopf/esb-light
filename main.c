@@ -53,8 +53,9 @@
 #include "nrfx_gpiote.h"
 #include "nrf_drv_clock.h"
 
+#include <common/protocol/esb_protocol.h>
+#include <light/esb_light.h>
 #include "timebase.h"
-#include "esb_protocol.h"
 #include "debug_swo.h"
 #include "led_effects.h"
 #include "colorwheel.h"
@@ -62,6 +63,9 @@
 
 #include "led_effects_static.h"
 #include "led_effects_fade.h"
+
+
+static const uint8_t esb_listener_address[5] = {100,100,100,100,1};
 
 static volatile uint32_t test_flag = 1;
 
@@ -120,7 +124,7 @@ int main(void)
     timebase_init();
     
     /* turn user LED on*/
-    //nrf_gpio_pin_set(NRF_GPIO_PIN_MAP(1, 12));
+    nrf_gpio_pin_set(NRF_GPIO_PIN_MAP(1, 12));
 
     rf_antenna_init();
 
@@ -130,7 +134,10 @@ int main(void)
 
     led_effects_disable();      
 
-    esb_protocol_init();
+    esb_protocol_init(esb_listener_address);
+
+    esb_light_init(esb_listener_address, CAP_RGB|CAP_HSI|CAP_BRIGHTNESS);
+
 	while (true)
 	{
         if(1 == test_flag){
