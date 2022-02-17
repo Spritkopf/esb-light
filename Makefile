@@ -26,6 +26,7 @@ SRC_FILES += \
   $(PROJ_DIR)/led_effects_fade.c \
   $(PROJ_DIR)/colorwheel.c \
   $(PROJ_DIR)/pixel.c \
+  $(PROJ_DIR)/persistent_mem.c \
   $(SDK_ROOT)/modules/nrfx/mdk/gcc_startup_nrf52840.S \
   $(SDK_ROOT)/components/boards/boards.c \
   $(SDK_ROOT)/components/libraries/timer/app_timer.c \
@@ -37,6 +38,8 @@ SRC_FILES += \
   $(SDK_ROOT)/components/libraries/util/app_error.c \
   $(SDK_ROOT)/components/libraries/util/app_error_handler_gcc.c \
   $(SDK_ROOT)/components/libraries/util/app_error_weak.c \
+  $(SDK_ROOT)/components/libraries/fstorage/nrf_fstorage.c \
+  $(SDK_ROOT)/components/libraries/fstorage/nrf_fstorage_nvmc.c \
   $(SDK_ROOT)/components/proprietary_rf/esb/nrf_esb.c \
   $(SDK_ROOT)/modules/nrfx/drivers/src/nrfx_gpiote.c \
   $(SDK_ROOT)/modules/nrfx/drivers/src/nrfx_clock.c \
@@ -67,6 +70,7 @@ INC_FOLDERS += \
   $(SDK_ROOT)/components/libraries/delay \
   $(SDK_ROOT)/components/libraries/timer \
   $(SDK_ROOT)/components/libraries/queue \
+  $(SDK_ROOT)/components/libraries/fstorage \
   $(SDK_ROOT)/components/boards \
   $(SDK_ROOT)/integration/nrfx/legacy \
   $(SDK_ROOT)/integration/nrfx \
